@@ -7,12 +7,14 @@ import java.util.TreeMap;
 
 public class Statistics {
     public static void main(String[] args) {
-        String fileBasePath = "C:\\Users\\jayed\\Documents\\B stat\\setting4\\";
+        String fileBasePath = "C:\\Users\\jayed\\Documents\\B stat\\tt_new\\for 100, 30 cutoff\\";
         //Bon_error_mixture_05_1 , Bon_Chisquare_05_1, Bon_Cauchy_05_1
-        String dataFileName = "tt_Cauchy_05_1";
+        String dataFileName = "Bon_Cauchy_setting1";
         String ext = ".xlsx";
 
-        Calculator calculator = new Calculator(fileBasePath + dataFileName + ext);
+        double impValueCount = 100d;
+
+        Calculator calculator = new Calculator(fileBasePath + dataFileName + ext, impValueCount);
 
         Map<Integer, ExcelFileWriter> excelWriters = new TreeMap<Integer, ExcelFileWriter>();
 

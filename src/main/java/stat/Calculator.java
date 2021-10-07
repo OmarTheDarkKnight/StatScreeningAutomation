@@ -7,6 +7,12 @@ import java.util.Map;
 
 public class Calculator {
     int[] cutoffs;
+    double impValueCount;
+    double totalValue;
+    double remainingValue;
+    int decimalPoint;
+
+    String strFormat;
 
     HashMap<Integer, Integer> dataList;
     HashMap<Integer, String> sensitivity;
@@ -17,11 +23,27 @@ public class Calculator {
     String dataSetFile;
     ExcelFileReader excelFileReader;
 
-    public Calculator(String dataSetFile) {
+    public Calculator(String dataSetFile, double impValueCount) {
+        this.impValueCount = impValueCount;
+        this.totalValue = 2000d;
+        this.remainingValue = this.totalValue - this.impValueCount;
         this.dataSetFile = dataSetFile;
         cutoffs = new int[]{30, 40, 50, 60, 70, 80, 90};
 //        cutoffs = new int[]{30};
         this.excelFileReader = new ExcelFileReader(dataSetFile);
+
+        decimalPoint = getDecimalPointLength((int)this.impValueCount);
+        System.out.println(decimalPoint);
+        this.strFormat = "%." + decimalPoint +"f";
+    }
+
+    private int getDecimalPointLength(int value) {
+        int length = -1;
+        while(value > 0) {
+            length++;
+            value = value / 10;
+        }
+        return length;
     }
 
     public int readDataForDataset(int dataset, int startRow) {
@@ -68,28 +90,29 @@ public class Calculator {
                 if(colC >= cutoff) {
                     int colB = item.getKey();
                     // for sensitivity
-                    if(colB >=1 && colB <= 10) {
+                    if(colB >=1 && colB <= this.impValueCount) {
                         SensitivityCounter++;
                     }
                     // for specificity
-                    else {
+                    else if(colB > this.impValueCount) {
                         specificityCounter++;
                     }
                 }
             }
-            Double d = (SensitivityCounter/10d);
-            String s = String.format("%.1f", d);
+            double d = (SensitivityCounter / this.impValueCount);
+            String s = String.format("%." + decimalPoint +"f", d);
+            System.out.println(s);
             sensitivity.put(cutoff, s);
 
-            d = (1990 - specificityCounter)/1990d;
+            d = ((int)this.remainingValue - specificityCounter) / this.remainingValue;
             s = String.format("%.4f", d);
             specificity.put(cutoff, s);
 
-            misIdentifiedValue = (10 - SensitivityCounter) + specificityCounter;
+            misIdentifiedValue = ( (int)this.impValueCount - SensitivityCounter) + specificityCounter;
 
             misidentified.put(cutoff, misIdentifiedValue);
 
-            d = (2000 - misIdentifiedValue)/2000d;
+            d = ((int)this.totalValue - misIdentifiedValue) / this.totalValue;
             s = String.format("%.4f", d);
             accuracy.put(cutoff, s);
         }
