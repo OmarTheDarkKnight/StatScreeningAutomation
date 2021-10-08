@@ -1,33 +1,47 @@
 package stat;
 
 import stat.util.ExcelFileWriter;
+import stat.util.PropertyProvider;
 
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 
 public class Statistics {
     public static void main(String[] args) {
-        String fileBasePath = "C:\\Users\\jayed\\Documents\\B stat\\tt_new\\for 100, 30 cutoff\\";
-        //Bon_error_mixture_05_1 , Bon_Chisquare_05_1, Bon_Cauchy_05_1
-        String dataFileName = "Bon_Cauchy_setting1";
+        PropertyProvider propertyProvider = new PropertyProvider();
+        Properties prop = propertyProvider.getProp();
+
+        String fileBasePath = (String) prop.get("folder.path");
+        String dataFileName = (String) prop.get("file.name");
         String ext = ".xlsx";
 
-        double impValueCount = 100d;
+        int totalDataSet = (int) prop.get("total.dataset");
+        double impValueCount = (double) prop.get("important.value.count");
 
-        Calculator calculator = new Calculator(fileBasePath + dataFileName + ext, impValueCount);
+        int[] cutoffs;
+        if((boolean)prop.get("calculate.cutoff")) {
+            cutoffs = new int[]{30, 40, 50, 60, 70, 80, 90};
+        } else {
+            cutoffs = new int[]{0};
+        }
+
+        Calculator calculator = new Calculator(fileBasePath + dataFileName + ext, impValueCount, cutoffs);
 
         Map<Integer, ExcelFileWriter> excelWriters = new TreeMap<Integer, ExcelFileWriter>();
 
         int start = 0;
-        for(int i = 1; i <= 100 ; i++) {
+        for(int i = 1; i <= totalDataSet ; i++) {
             start = calculator.readDataForDataset(i, start);
             calculator.calculate();
-//            System.out.println("Cutoff--SENSI----SPECI-----MISI-----ACCU");
-//            System.out.println("=========================================");
-            for(int cutoff : calculator.getCutoffs()) {
+
+            for(int cutoff : cutoffs) {
+                String outputFilePath = fileBasePath + dataFileName;
+                outputFilePath += (boolean)prop.get("calculate.cutoff") ? "_" + cutoff +"_cutoff" : "_output";
+                outputFilePath += ext;
+
                 if(!excelWriters.containsKey(cutoff)) {
-                    excelWriters.put(cutoff, new ExcelFileWriter(fileBasePath + dataFileName
-                            + "_" + cutoff +"_cutoff" + ext));
+                    excelWriters.put(cutoff, new ExcelFileWriter(outputFilePath));
                 }
 
                 excelWriters.get(cutoff).addToWriter(new String[] {
@@ -36,13 +50,6 @@ public class Statistics {
                         calculator.getAccuracy().get(cutoff),
                         calculator.getMisidentified().get(cutoff).toString()
                 });
-
-//                System.out.println(cutoff + "      "
-//                        + calculator.getSensitivity().get(cutoff) + "    "
-//                        + calculator.getSpecificity().get(cutoff) + "      "
-//                        + calculator.getMisidentified().get(cutoff) + "      "
-//                        + calculator.getAccuracy().get(cutoff)
-//                );
             }
         }
 

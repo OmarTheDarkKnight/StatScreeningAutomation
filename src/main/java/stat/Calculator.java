@@ -23,13 +23,12 @@ public class Calculator {
     String dataSetFile;
     ExcelFileReader excelFileReader;
 
-    public Calculator(String dataSetFile, double impValueCount) {
+    public Calculator(String dataSetFile, double impValueCount, int[] cutoffs) {
         this.impValueCount = impValueCount;
         this.totalValue = 2000d;
         this.remainingValue = this.totalValue - this.impValueCount;
         this.dataSetFile = dataSetFile;
-        cutoffs = new int[]{30, 40, 50, 60, 70, 80, 90};
-//        cutoffs = new int[]{30};
+        this.cutoffs = cutoffs;
         this.excelFileReader = new ExcelFileReader(dataSetFile);
 
         decimalPoint = getDecimalPointLength((int)this.impValueCount);
@@ -54,12 +53,16 @@ public class Calculator {
         int colC = -1;
         while (colA == dataset) {
             colB = this.excelFileReader.getIntCellData(startRow, 1);
-            colC = this.excelFileReader.getIntCellData(startRow, 2);
-            if(this.dataList.containsKey(colB)) {
-                // check colC val
-                int oldColC = this.dataList.get(colB);
-                if(oldColC > colC) {
-                    colC = oldColC;
+            if(this.cutoffs.length == 1) {
+                colC = 1;
+            } else {
+                colC = this.excelFileReader.getIntCellData(startRow, 2);
+                if(this.dataList.containsKey(colB)) {
+                    // check colC val
+                    int oldColC = this.dataList.get(colB);
+                    if(oldColC > colC) {
+                        colC = oldColC;
+                    }
                 }
             }
             this.dataList.put(colB, colC);
