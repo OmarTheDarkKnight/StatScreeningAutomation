@@ -16,11 +16,14 @@ public class Statistics {
         String dataFileName = (String) prop.get("file.name");
         String ext = ".xlsx";
 
-        int totalDataSet = (int) prop.get("total.dataset");
-        double impValueCount = (double) prop.get("important.value.count");
+        int totalDataSet = Integer.valueOf((String) prop.get("total.dataset"));
+//        int totalDataSet = 100;
+        double impValueCount = Double.valueOf((String) prop.get("important.value.count"));
+//        double impValueCount = 10d;
 
         int[] cutoffs;
-        if((boolean)prop.get("calculate.cutoff")) {
+        Boolean cutoffCalculate = Boolean.valueOf((String) prop.get("calculate.cutoff"));
+        if(cutoffCalculate) {
             cutoffs = new int[]{30, 40, 50, 60, 70, 80, 90};
         } else {
             cutoffs = new int[]{0};
@@ -37,7 +40,7 @@ public class Statistics {
 
             for(int cutoff : cutoffs) {
                 String outputFilePath = fileBasePath + dataFileName;
-                outputFilePath += (boolean)prop.get("calculate.cutoff") ? "_" + cutoff +"_cutoff" : "_output";
+                outputFilePath += cutoffCalculate ? "_" + cutoff +"_cutoff" : "_output";
                 outputFilePath += ext;
 
                 if(!excelWriters.containsKey(cutoff)) {
